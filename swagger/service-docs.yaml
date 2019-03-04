@@ -1,0 +1,73 @@
+swagger: "2.0"
+
+info:
+  title: "My API documentation"
+  version: "1.0"
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+basePath: /v1.0
+
+securityDefinitions:
+  basicAuth:
+    type: basic
+    x-basicInfoFunc: app.basic_auth
+paths:
+  /customers/create:
+    post:
+      tags:
+      - admins
+      security:
+      - basicAuth: []
+      operationId: api.customers.create_customer
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: customerPayload
+        description: Customer to add
+        schema:
+          $ref: '#/definitions/Customer'
+      responses:
+        201:
+          description: Successfully added customer to the DB
+          schema:
+            type: string
+        400:
+          description: invalid input, object invalid
+        409:
+          description: an existing item already exists
+  /customers/{cpf}:
+      get:
+        tags:
+        - public
+        operationId: api.customers.read_customer
+        parameters:
+          - in: path
+            name: cpf
+            type: string
+            required: true
+            description: Numeric ID of the user to get.
+        responses:
+          '200':
+            description: 'Fetch a customer from the database'
+            schema:
+                $ref: '#/definitions/Customer'
+
+tags:
+- name: public
+  description: Operations available to regular developers
+- name: admins
+  description: Secured Admin-only calls
+
+definitions:
+  Customer:
+    type: object
+    properties:
+      cpf:  { type: string }
+      name: { type: string }
+      address: { type: string }
+      debts_list: { type: array }
