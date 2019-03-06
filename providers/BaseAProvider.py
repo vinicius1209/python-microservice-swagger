@@ -1,4 +1,5 @@
 import couchdb
+import flask
 
 COUCHDB_URL = 'http://localhost:5984/'
 
@@ -6,17 +7,17 @@ couch = couchdb.Server(COUCHDB_URL)
 
 class BaseAProvider(object):
 
-    def create_customer(self, payload):
-        db = couch['customer']
-        if payload['cpf'] in db:
-            return {"error": "Found customer with existing CPF"}, 409
-        else:
-            db.save(payload)
-            return payload, 201
-
+    #Search a customer by CPF
     def read_customer(self, cpf) -> str:
+
+        #Check auth header
+        if 'Authorization' not in flask.request.headers:
+            return {"error": "Not correctly authorized"}, 401
+
         db = couch['customer']
         rows = db.view('_all_docs', include_docs=True)
+
+        #Return doc if founded
         for row in rows:
             if cpf == row.doc['cpf']:
                 return row.doc, 200

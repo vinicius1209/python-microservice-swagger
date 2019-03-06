@@ -1,7 +1,7 @@
 swagger: "2.0"
 
 info:
-  title: "My API documentation"
+  title: "Microservice A - Documentation"
   version: "1.0"
   license:
     name: Apache 2.0
@@ -12,38 +12,14 @@ basePath: /v1.0
 securityDefinitions:
   basicAuth:
     type: basic
-    x-basicInfoFunc: app.basic_auth
+    x-basicInfoFunc: app.getAuth
 paths:
-  /customers/create:
-    post:
-      tags:
-      - admins
-      security:
-      - basicAuth: []
-      operationId: api.customers.create_customer
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      parameters:
-      - in: body
-        name: customerPayload
-        description: Customer to add
-        schema:
-          $ref: '#/definitions/Customer'
-      responses:
-        201:
-          description: Successfully added customer to the DB
-          schema:
-            type: string
-        400:
-          description: invalid input, object invalid
-        409:
-          description: an existing item already exists
   /customers/{cpf}:
       get:
         tags:
         - public
+        security:
+        - basicAuth: []
         operationId: api.customers.read_customer
         parameters:
           - in: path

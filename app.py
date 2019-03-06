@@ -1,45 +1,36 @@
-from flask import Flask
-from flask_jwt import JWT, jwt_required, current_identity
-from werkzeug.security import safe_str_cmp
+import connexion
+from flask_injector import FlaskInjector
+from connexion.resolver import RestyResolver
+from providers.BaseAProvider import BaseAProvider
+import requests
+import json
+from injector import Binder
 
-#Simple User Class
-class User(object):
-    def __init__(self, id, username, password):
-        self.id = id
-        self.username = username
-        self.password = password
+def getAuth(username, password, required_scopes=None):
 
-    def __str__(self):
-        return "User(id='%s')" % self.id
+    data = {'username': username, 'password': password}
+    header = {'Content-Type': 'application/json'}
 
-#Example of users that's can get token
-users = [
-    User(1, 'vinicius', 'vinicius'),
-    User(2, 'nicole', 'nicole'),
-]
+    try:
+        #Make a requisition to check credencials
+        r = requests.post('http://127.0.0.1:5000/auth', json=data, headers=header)
+        if r.status_code == 200:
+            token = json.loads(r.text)
+            print(token['access_token'])
+        else:
+            return None
+    except Exception as e:
+        print(e)
+        return None
+    return token
 
-username_table = {u.username: u for u in users}
-userid_table = {u.id: u for u in users}
-
-def authenticate(username, password):
-    user = username_table.get(username, None)
-    if user and safe_str_cmp(user.password.encode('utf-8'), password.encode('utf-8')):
-        return user
-
-def identity(payload):
-    user_id = payload['identity']
-    return userid_table.get(user_id, None)
-
-app = Flask(__name__)
-app.debug = True
-app.config['SECRET_KEY'] = 'quero-ser-contratado'
-
-jwt = JWT(app, authenticate, identity)
-
-@app.route('/protected')
-@jwt_required()
-def protected():
-    return '%s' % current_identity
+def configure(binder: Binder) -> Binder:
+    binder.bind(
+        BaseAProvider
+    )
 
 if __name__ == '__main__':
+    app = connexion.App(__name__, port=9090, specification_dir='swagger/')
+    app.add_api('service-docs.yaml', resolver=RestyResolver('api'))
+    FlaskInjector(app=app.app, modules=[configure])
     app.run()
