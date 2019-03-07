@@ -3,20 +3,18 @@ from flask_injector import FlaskInjector
 from connexion.resolver import RestyResolver
 from providers.BaseAProvider import BaseAProvider
 import requests
-import json
 from injector import Binder
 
-def getAuth(username, password, required_scopes=None):
+#Check token receveid from header
+def check_token(token):
 
-    data = {'username': username, 'password': password}
-    header = {'Content-Type': 'application/json'}
+    header = {'Authorization': 'JWT {}'.format(token)}
 
     try:
         #Make a requisition to check credencials
-        r = requests.post('http://127.0.0.1:5000/auth', json=data, headers=header)
+        r = requests.get('http://127.0.0.1:5000/checkAuth', headers=header)
         if r.status_code == 200:
-            token = json.loads(r.text)
-            print(token['access_token'])
+            return {'status': '200'}
         else:
             return None
     except Exception as e:

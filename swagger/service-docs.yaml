@@ -10,16 +10,19 @@ info:
 basePath: /v1.0
 
 securityDefinitions:
-  basicAuth:
-    type: basic
-    x-basicInfoFunc: app.getAuth
+  customer_auth:
+    type: "oauth2"
+    flow: "accessCode"
+    authorizationUrl: /customers/{cpf}
+    tokenUrl: "http://127.0.0.1:5000/checkAuth"
+    x-tokenInfoFunc: app.check_token
 paths:
   /customers/{cpf}:
       get:
         tags:
         - public
         security:
-        - basicAuth: []
+        - customer_auth: []
         operationId: api.customers.read_customer
         parameters:
           - in: path
